@@ -1,11 +1,4 @@
-import {
-  createFolder,
-  delay,
-  downloadImage,
-  generateImagePath,
-  getTextsTabulated,
-  saveTexts,
-} from "./utils"
+import { delay, downloadImage, generateImagePath, saveTexts } from "./utils"
 import { JSDOM } from "jsdom"
 import { ParserConfig } from "./types"
 
@@ -18,13 +11,14 @@ export function parse({
   imageParsers,
   textParsers,
 }: ParserConfig) {
-  createFolder(folderName)
-
+  if (!productCodes || !productUrls) {
+    return
+  }
   const texts: string[] = []
   const textsHeaderRow = textParsers?.map(({ name }) => name).join("\t")
-  textsHeaderRow && texts.push(`${textsHeaderRow}\n`)
+  textsHeaderRow && texts.push(`ART\tURL\t${textsHeaderRow}\n`)
 
-  productCodes.forEach(async (productCode) => {
+  productCodes.forEach(async (productCode, productCodesIterationIndex) => {
     {
       await delay(requestDelay)
 
@@ -53,21 +47,24 @@ export function parse({
       })
 
       // Parsing texts
-      textParsers?.forEach(async ({ selector }) => {
-        const nodesToExtractText = Array.from(html.querySelectorAll(selector))
-
-        nodesToExtractText.forEach(async (node) => {
-          const textRow = node.textContent?.replace(/[\t\n]/g, "")
-          textRow && texts.push(textRow)
-        })
-      })
-
-      texts.length &&
-        saveTexts(
-          "texts",
-          folderName,
-          getTextsTabulated(texts, textParsers?.length || 0)
+      const textRow: string | undefined = textParsers
+        ?.map(({ selector }) =>
+          Array.from(html.querySelectorAll(selector)) // nodes to parse
+            .map((node) => node.textContent?.replace(/[\t\n]/g, ""))
+            .join("\t")
         )
+        .join("\t")
+
+      texts.push(`${productCode}\t${productUrl}\t${textRow}`)
+
+      const isLastIteration =
+        productCodesIterationIndex === productCodes.length - 1
+
+      if (!isLastIteration || !textParsers) {
+        return
+      }
+
+      await saveTexts("texts.txt", folderName, texts.join("\n"))
     }
   })
 }

@@ -2,8 +2,8 @@ import { AllHTMLAttributes } from "react"
 
 export type ParserConfig = {
   domainName: string
-  productCodes: string[]
-  productUrls: string[]
+  productCodes?: string[]
+  productUrls?: string[]
   requestDelay?: number
   folderName: string
   imageParsers?: ImageParserConfig<HTMLElement>[]
@@ -19,14 +19,4 @@ export type ImageParserConfig<T extends HTMLElement> = {
 export type TextParserConfig = {
   name: string
   selector: string
-}
-
-export type ParsedExcelRow = {
-  ART: string
-  URL: string
-}
-
-export enum ParserConfigType {
-  charmante = "charmante",
-  rusteaco = "rusteaco",
 }

@@ -2,7 +2,7 @@ import {
   ImageParserConfig,
   ParserConfig,
   TextParserConfig,
-} from "../utils/types"
+} from "../../utils/types"
 
 const DOMAIN_NAME = "https://www.rusteaco.ru/"
 
@@ -12,20 +12,18 @@ const mainImagesParser: ImageParserConfig<HTMLImageElement> = {
 }
 
 const titleTextParser: TextParserConfig = {
-  name: "Название",
+  name: "Title",
   selector: ".product-desc > h1",
 }
 
 const descriptionTextParser: TextParserConfig = {
-  name: "Описание",
+  name: "Description",
   selector: "ul#tabs > li:first-child",
 }
 
 export const rusteacoParserConfig: ParserConfig = {
   domainName: DOMAIN_NAME,
   folderName: "rusteaco",
-  productCodes: [],
-  productUrls: [],
   imageParsers: [mainImagesParser],
   textParsers: [titleTextParser, descriptionTextParser],
 }

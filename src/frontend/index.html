@@ -8,11 +8,9 @@
   </head>
   <body>
     <h1>Web Parser 3.0</h1>
-    <p>Загрузите Excel-таблицу.</p>
-    <p>Первая строка - только шапка (ART, URL), данные со второй строки.</p>
-    <p>Столбцы слева-направо: Артикул, Ссылка</p>
+    <p>Загрузите Excel-таблицу (*.xlsx)</p>
     <form
-      action="http://localhost:3000/upload"
+      action="http://localhost:3000/upload-consowear"
       enctype="multipart/form-data"
       method="post"
     >
@@ -22,22 +20,13 @@
             ><input
               type="radio"
               name="config"
-              value="charmante"
+              value="generate-consowear"
               checked
-            />Charmante</label
-          >
-        </li>
-        <li>
-          <label
-            ><input
-              type="radio"
-              name="config"
-              value="rusteaco"
-            />RusTeaCo</label
+            />Parse Consowear</label
           >
         </li>
       </ul>
-      <input type="file" name="file" accept=".xlsx" id="file" />
+      <input type="file" name="file" accept=".xlsx" />
     </form>
     <script src="form.js"></script>
   </body>
