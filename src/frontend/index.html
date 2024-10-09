@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <title>Web Parser 3.0</title>
+  </head>
+  <body>
+    <h1>Web Parser 3.0</h1>
+    <p>Загрузите Excel-таблицу.</p>
+    <p>Первая строка - только шапка (ART, URL), данные со второй строки.</p>
+    <p>Столбцы слева-направо: Артикул, Ссылка</p>
+    <form
+      action="http://localhost:3000/upload"
+      enctype="multipart/form-data"
+      method="post"
+    >
+      <ul>
+        <li>
+          <label
+            ><input
+              type="radio"
+              name="config"
+              value="charmante"
+              checked
+            />Charmante</label
+          >
+        </li>
+        <li>
+          <label
+            ><input
+              type="radio"
+              name="config"
+              value="rusteaco"
+            />RusTeaCo</label
+          >
+        </li>
+      </ul>
+      <input type="file" name="file" accept=".xlsx" id="file" />
+    </form>
+    <script src="form.js"></script>
+  </body>
+</html>
