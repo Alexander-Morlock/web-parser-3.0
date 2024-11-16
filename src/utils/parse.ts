@@ -2,7 +2,7 @@ import { delay, downloadImage, generateImagePath, saveTexts } from "./utils"
 import { JSDOM } from "jsdom"
 import { ImageParserConfig, ParserConfig } from "./types"
 
-export function parse({
+export async function parse({
   domainName,
   productCodes,
   productUrls,
@@ -12,13 +12,14 @@ export function parse({
   textParsers,
 }: ParserConfig) {
   if (!productCodes || !productUrls) {
-    return Promise.resolve()
+    return
   }
+
   const texts: string[] = []
   const textsHeaderRow = textParsers?.map(({ name }) => name).join("\t")
   textsHeaderRow && texts.push(`ART\tURL\t${textsHeaderRow}\n`)
 
-  return Promise.all(
+  await Promise.all(
     productCodes.map(async (productCode, productCodesIterationIndex) => {
       {
         await delay(requestDelay)
@@ -55,13 +56,15 @@ export function parse({
             return
           }
 
-          await saveTexts("texts.txt", folderName, texts.join("\n"))
-        } catch (error) {
+          saveTexts("texts.txt", folderName, texts.join("\n"))
+        } catch (e) {
           console.log(`ERROR -> ${productCode}`)
         }
       }
     })
-  ).then(() => console.log("-----------------> JOB IS DONE <-----------------"))
+  )
+
+  console.log("-----------------> JOB IS DONE <-----------------")
 }
 
 /** Downloading images from parsed urls */
