@@ -37,6 +37,13 @@ export async function parseConsoWear({ data, imagesHostingUrl }: Props) {
     const item = data[i]
     const URL = await getUrlFromConsowearSearchResult(item.ART)
     dataWithUrls.push({ ...item, URL })
+    console.log(
+      "Getting URL... ",
+      item.ART,
+      " -> ",
+      URL,
+      `Progress: ${Math.round((i / data.length) * 100)}%`
+    )
   }
 
   const html = data
