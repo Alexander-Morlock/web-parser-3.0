@@ -8,7 +8,10 @@ import { parseConsoWear } from "./utils"
 import { Express } from "express"
 import path from "path"
 
-export function generateConsoWearUploadExcelApi(app: Express) {
+export function generateConsoWearUploadExcelApi(
+  app: Express,
+  rootDirName: string
+) {
   return generateUploadExcelApi<ConsoWearSingleSizeExcelRow>({
     app,
     endPoint: "/upload-consowear",
@@ -16,7 +19,7 @@ export function generateConsoWearUploadExcelApi(app: Express) {
       createFolder("consowear", "html")
       createFolder("consowear", "images")
 
-      res.sendFile(path.join(__dirname, "upload-succesfull.html"))
+      res.sendFile(path.join(rootDirName, "upload-succesfull.html"))
 
       const products: {
         [key: string]: ConsoWearMultipleSizesExcelRow

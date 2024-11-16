@@ -14,7 +14,7 @@ app.use(express.static("dist"))
 
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "index.html")))
 
-generateConsoWearUploadExcelApi(app)
+generateConsoWearUploadExcelApi(app, __dirname)
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)
