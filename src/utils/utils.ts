@@ -85,3 +85,8 @@ export function copyFrontendToDistr() {
     fs.copyFileSync(`src/frontend/${fileName}`, `dist/${fileName}`)
   )
 }
+
+export function roundNumberBy(number: number, base: number) {
+  const safeBase = Math.ceil(Math.abs(base))
+  return safeBase * Math.ceil(number / safeBase)
+}

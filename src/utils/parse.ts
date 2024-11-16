@@ -12,13 +12,13 @@ export function parse({
   textParsers,
 }: ParserConfig) {
   if (!productCodes || !productUrls) {
-    return
+    return Promise.resolve()
   }
   const texts: string[] = []
   const textsHeaderRow = textParsers?.map(({ name }) => name).join("\t")
   textsHeaderRow && texts.push(`ART\tURL\t${textsHeaderRow}\n`)
 
-  Promise.all(
+  return Promise.all(
     productCodes.map(async (productCode, productCodesIterationIndex) => {
       {
         await delay(requestDelay)
@@ -57,7 +57,7 @@ export function parse({
 
           await saveTexts("texts.txt", folderName, texts.join("\n"))
         } catch (error) {
-          console.log("ERROR -> ", error)
+          console.log(`ERROR -> ${productCode}`)
         }
       }
     })

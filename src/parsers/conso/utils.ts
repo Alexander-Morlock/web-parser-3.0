@@ -45,7 +45,7 @@ export async function parseConsoWear({ data, imagesHostingUrl }: Props) {
         "[color=blue][size=16pt]",
         ART,
         "[/size] * ",
-        SIZES,
+        SIZES.join(", "),
         " * [/color][br][b]",
         SUBART,
         "[/b][br][br]Описание: ",

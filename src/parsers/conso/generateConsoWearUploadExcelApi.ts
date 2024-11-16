@@ -1,5 +1,5 @@
 import { generateUploadExcelApi } from "../../utils/generateUploadExcelApi"
-import { createFolder } from "../../utils/utils"
+import { createFolder, roundNumberBy } from "../../utils/utils"
 import {
   ConsoWearSingleSizeExcelRow,
   ConsoWearMultipleSizesExcelRow,
@@ -37,7 +37,7 @@ export function generateConsoWearUploadExcelApi(
               ART,
               SUBART,
               SIZES: [SIZE],
-              PRICE,
+              PRICE: String(roundNumberBy(Number(PRICE), 10)),
               MATERIALS,
               COLOR,
               DESCRIPTION,
