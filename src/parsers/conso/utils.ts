@@ -1,7 +1,7 @@
-import fs from "fs"
 import { consoParserConfig, consoPreviewImagesParser } from "./parserConfig"
 import { parse } from "../../utils/parse"
 import {
+  exctractUrlsFromBackup,
   getProgress,
   replaceSlashesWithAmpersands,
   saveTexts,
@@ -41,7 +41,7 @@ export async function parseConsoWear({
 }: ParseConsoWearProps) {
   const dataEnhancedWithPossibleUrls: DataEnhancedWithPossibleUrls = []
 
-  const backup = await exctractUrlsFromBackup()
+  const backup = await exctractUrlsFromBackup(consoParserConfig.folderName)
 
   for (let i = 0; i < data.length; i++) {
     const item = data[i]
@@ -137,33 +137,4 @@ async function createBackup(
   }
 
   return saveTexts(URLS_BACKUP_FILENAME, "consowear/html", backup, false)
-}
-
-type ExctractUrlsFromBackup = { [key: string]: string | undefined }
-
-export function exctractUrlsFromBackup() {
-  return new Promise<ExctractUrlsFromBackup>((resolve, reject) =>
-    fs.readFile(
-      `parsed/consowear/html/${URLS_BACKUP_FILENAME}`,
-      (err, data) => {
-        if (err) {
-          return reject(err)
-        }
-
-        const dataConvertedToUtf8 = Buffer.from(data.toJSON().data).toString(
-          "utf-8"
-        )
-
-        const backup: ExctractUrlsFromBackup = {}
-
-        dataConvertedToUtf8.split("\n").forEach((row) => {
-          const [art, url] = row.split("\t")
-          backup[art] = url
-        })
-
-        console.log("BACKUP FOUND")
-        resolve(backup)
-      }
-    )
-  )
 }

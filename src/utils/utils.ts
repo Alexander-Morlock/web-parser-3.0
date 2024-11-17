@@ -1,5 +1,6 @@
 import fs from "fs"
 import https from "https"
+import { ExctractUrlsFromBackup } from "./types"
 
 const PATH_PREFIX = "parsed/"
 export const URLS_BACKUP_FILENAME = "urls-backup.txt"
@@ -99,4 +100,37 @@ export function roundNumberBy(number: number, base: number) {
 
 export function getProgress(currentStep: number, steps: number) {
   return `Progress: [${Math.round((currentStep / steps) * 100)}%]`
+}
+
+export function exctractUrlsFromBackup(folderName: string) {
+  return new Promise<ExctractUrlsFromBackup>((resolve, reject) => {
+    const urlsBackupPath = `parsed/${folderName}/html/${URLS_BACKUP_FILENAME}`
+    try {
+      if (!fs.existsSync(urlsBackupPath)) {
+        return resolve({})
+      }
+
+      fs.readFile(urlsBackupPath, (err, data) => {
+        if (err) {
+          return reject(err)
+        }
+
+        const dataConvertedToUtf8 = Buffer.from(data.toJSON().data).toString(
+          "utf-8"
+        )
+
+        const backup: ExctractUrlsFromBackup = {}
+
+        dataConvertedToUtf8.split("\n").forEach((row) => {
+          const [art, url] = row.split("\t")
+          backup[art] = url
+        })
+
+        console.log("BACKUP FOUND")
+        resolve(backup)
+      })
+    } catch (error) {
+      console.log(error)
+    }
+  })
 }

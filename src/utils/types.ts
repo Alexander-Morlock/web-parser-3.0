@@ -20,3 +20,5 @@ export type TextParserConfig = {
   name: string
   selector: string
 }
+
+export type ExctractUrlsFromBackup = { [key: string]: string | undefined }

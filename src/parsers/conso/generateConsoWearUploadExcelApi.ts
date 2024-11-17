@@ -1,12 +1,12 @@
 import { generateUploadExcelApi } from "../../utils/generateUploadExcelApi"
-import { createFolder, roundNumberBy } from "../../utils/utils"
+import { roundNumberBy } from "../../utils/utils"
+import { consoParserConfig } from "./parserConfig"
 import {
   ConsoWearSingleSizeExcelRow,
   ConsoWearMultipleSizesExcelRow,
 } from "./types"
 import { parseConsoWear } from "./utils"
 import { Express } from "express"
-import path from "path"
 
 export function generateConsoWearUploadExcelApi(
   app: Express,
@@ -14,13 +14,10 @@ export function generateConsoWearUploadExcelApi(
 ) {
   return generateUploadExcelApi<ConsoWearSingleSizeExcelRow>({
     app,
+    rootDirName,
     endPoint: "/upload-consowear",
+    folderName: consoParserConfig.folderName,
     callback: (jsonData, req, res) => {
-      createFolder("consowear", "html")
-      createFolder("consowear", "images")
-
-      res.sendFile(path.join(rootDirName, "upload-succesfull.html"))
-
       const products: {
         [key: string]: ConsoWearMultipleSizesExcelRow
       } = {}
