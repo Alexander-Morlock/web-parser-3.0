@@ -2,6 +2,7 @@ import fs from "fs"
 import https from "https"
 
 const PATH_PREFIX = "parsed/"
+export const URLS_BACKUP_FILENAME = "urls-backup.txt"
 
 export function createFolder(folderName: string, subfolder: string) {
   try {
@@ -51,13 +52,18 @@ export function downloadImage(path: string, imageUrl: string) {
   })
 }
 
-export function saveTexts(fileName: string, folderName: string, data: string) {
+export function saveTexts(
+  fileName: string,
+  folderName: string,
+  data: string,
+  enableConsoleMessage = true
+) {
   return new Promise((resolve) => {
     fs.writeFile(`${PATH_PREFIX}${folderName}/${fileName}`, data, (err) => {
       if (err) {
         return console.log(err)
       }
-      console.log(`${fileName} was saved!`)
+      enableConsoleMessage && console.log(`${fileName} was saved!`)
       resolve(true)
     })
   })

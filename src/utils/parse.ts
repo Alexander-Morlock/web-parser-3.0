@@ -81,25 +81,24 @@ function downloadImages(
   folderName: string,
   productCode: string
 ) {
+  const imagesToParse = imageParsers
+    .map(({ selector, source, maxNumberOfImages }) => {
+      const nodesToExtractImageUrl = Array.from(html.querySelectorAll(selector))
+      return nodesToExtractImageUrl
+        .map((node) => String(node[source as keyof Element]))
+        .slice(0, maxNumberOfImages)
+    })
+    .flat()
+    .map((parsedUrl, index) => {
+      const url = parsedUrl.includes(domainName)
+        ? parsedUrl
+        : `${domainName}/${parsedUrl}`.replace(/\/+/g, "/")
+      const path = generateImagePath(folderName, productCode, index)
+
+      return { path, url }
+    })
+
   return Promise.all(
-    imageParsers
-      .map(({ selector, source, maxNumberOfImages }) => {
-        const nodesToExtractImageUrl = Array.from(
-          html.querySelectorAll(selector)
-        )
-        const parsedUrls = nodesToExtractImageUrl
-          .map((node) => String(node[source as keyof Element]))
-          .slice(0, maxNumberOfImages)
-
-        return parsedUrls.map((parsedUrl, index) => {
-          const url = parsedUrl.includes(domainName)
-            ? parsedUrl
-            : `${domainName}/${parsedUrl}`.replace(/\/+/g, "/")
-          const path = generateImagePath(folderName, productCode, index)
-
-          return downloadImage(path, url)
-        })
-      })
-      .flat()
+    imagesToParse.map(({ path, url }) => downloadImage(path, url))
   )
 }
