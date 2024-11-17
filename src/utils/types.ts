@@ -1,4 +1,5 @@
 import { AllHTMLAttributes } from "react"
+import { ResizeOptions } from "sharp"
 
 export type ParserConfig = {
   domainName: string
@@ -8,6 +9,7 @@ export type ParserConfig = {
   folderName: string
   imageParsers?: ImageParserConfig<HTMLElement>[]
   textParsers?: TextParserConfig[]
+  resizeOptions?: ResizeOptions
 }
 
 export type ImageParserConfig<T extends HTMLElement> = {

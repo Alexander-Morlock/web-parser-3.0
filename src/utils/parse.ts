@@ -1,3 +1,4 @@
+import { ResizeOptions } from "sharp"
 import {
   downloadImage,
   generateImagePath,
@@ -14,6 +15,7 @@ export async function parse({
   folderName,
   imageParsers,
   textParsers,
+  resizeOptions,
 }: ParserConfig) {
   if (!productCodes || !productUrls) {
     return
@@ -40,13 +42,14 @@ export async function parse({
           productCode
         )
 
-        await downloadImages(
+        await downloadImages({
           imageParsers,
           html,
           domainName,
           folderName,
-          productCode
-        )
+          productCode,
+          resizeOptions,
+        })
       }
 
       // Parsing texts
@@ -72,14 +75,24 @@ export async function parse({
   }
 }
 
-/** Downloading images from parsed urls */
-function downloadImages(
-  imageParsers: ImageParserConfig<HTMLElement>[],
-  html: Document,
-  domainName: string,
-  folderName: string,
+type DownloadImagesProps = {
+  imageParsers: ImageParserConfig<HTMLElement>[]
+  html: Document
+  domainName: string
+  folderName: string
   productCode: string
-) {
+  resizeOptions?: ResizeOptions
+}
+
+/** Downloading images from parsed urls */
+function downloadImages({
+  imageParsers,
+  html,
+  domainName,
+  folderName,
+  productCode,
+  resizeOptions,
+}: DownloadImagesProps) {
   const imagesToParse = imageParsers
     .map(({ selector, source, maxNumberOfImages }) => {
       const nodesToExtractImageUrl = Array.from(html.querySelectorAll(selector))
@@ -107,6 +120,7 @@ function downloadImages(
         path,
         fileName,
         sourceImageUrl,
+        resizeOptions,
       })
     )
   )

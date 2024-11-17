@@ -1,6 +1,7 @@
 import fs from "fs"
 import https from "https"
 import { ExctractUrlsFromBackup } from "./types"
+import sharp, { ResizeOptions } from "sharp"
 
 const PATH_PREFIX = "parsed/"
 export const URLS_BACKUP_FILENAME = "urls-backup.txt"
@@ -34,18 +35,20 @@ type DownloadImageProps = {
   path: string
   fileName: string
   sourceImageUrl: string
+  resizeOptions?: ResizeOptions
 }
 
 export function downloadImage({
   path,
   fileName,
   sourceImageUrl,
+  resizeOptions,
 }: DownloadImageProps) {
   const getFullPath = (config?: { postfix: string }) =>
     `${path}${fileName}${config?.postfix ?? ""}.jpg`
 
   const largeFilePath = getFullPath({ postfix: "_enl" })
-  // const smallFilePath = getFullPath()
+  const smallFilePath = getFullPath()
 
   if (fs.existsSync(largeFilePath)) {
     console.log("Image is already downloaded", largeFilePath)
@@ -53,18 +56,32 @@ export function downloadImage({
   }
 
   const fileLarge = fs.createWriteStream(largeFilePath)
-  // const fileSmall = fs.createWriteStream(smallFilePath)
 
   return new Promise((resolve, reject) => {
     https
       .get(sourceImageUrl, (response) => {
         response.pipe(fileLarge)
-        // response.pipe(fileSmall)
 
         fileLarge.on("finish", () => {
           fileLarge.close()
-          console.log(`Image downloaded as ${largeFilePath}`)
-          resolve(true)
+          console.log(`Image downloaded as ${fileName}`)
+
+          if (!resizeOptions) {
+            return resolve(true)
+          }
+
+          // resizing
+          fs.readFile(largeFilePath, async (err, buffer) => {
+            if (err) {
+              return reject(err)
+            }
+
+            sharp(buffer)
+              .resize(resizeOptions)
+              .toFile(smallFilePath)
+              .then(() => resolve(true))
+              .catch(() => reject(err))
+          })
         })
       })
       .on("error", (err) => {

@@ -11,4 +11,5 @@ export const consoParserConfig: ParserConfig = {
   folderName: "consowear",
   requestDelay: 200,
   imageParsers: [consoPreviewImagesParser],
+  resizeOptions: { height: 300, fit: "contain" },
 }
