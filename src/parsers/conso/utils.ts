@@ -1,4 +1,3 @@
-import path from "path"
 import fs from "fs"
 import { consoParserConfig, consoPreviewImagesParser } from "./parserConfig"
 import { parse } from "../../utils/parse"

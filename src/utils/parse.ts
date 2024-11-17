@@ -1,5 +1,5 @@
+import fs from "fs"
 import {
-  delay,
   downloadImage,
   generateImagePath,
   getProgress,
@@ -99,6 +99,17 @@ function downloadImages(
     })
 
   return Promise.all(
-    imagesToParse.map(({ path, url }) => downloadImage(path, url))
+    imagesToParse.map(({ path, url }) => {
+      try {
+        if (fs.existsSync(path)) {
+          console.log("Image is already downloaded", path)
+          return Promise.resolve()
+        }
+        return downloadImage(path, url)
+      } catch (error) {
+        console.log(error)
+        return Promise.reject()
+      }
+    })
   )
 }
