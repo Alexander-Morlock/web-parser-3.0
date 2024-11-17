@@ -30,17 +30,40 @@ export function delay(delayTimeMs: number) {
   return new Promise((resolve) => setTimeout(resolve, delayTimeMs))
 }
 
-export function downloadImage(path: string, imageUrl: string) {
-  const file = fs.createWriteStream(path)
+type DownloadImageProps = {
+  path: string
+  fileName: string
+  sourceImageUrl: string
+}
+
+export function downloadImage({
+  path,
+  fileName,
+  sourceImageUrl,
+}: DownloadImageProps) {
+  const getFullPath = (config?: { postfix: string }) =>
+    `${path}${fileName}${config?.postfix ?? ""}.jpg`
+
+  const largeFilePath = getFullPath({ postfix: "_enl" })
+  // const smallFilePath = getFullPath()
+
+  if (fs.existsSync(largeFilePath)) {
+    console.log("Image is already downloaded", largeFilePath)
+    return Promise.resolve()
+  }
+
+  const fileLarge = fs.createWriteStream(largeFilePath)
+  // const fileSmall = fs.createWriteStream(smallFilePath)
 
   return new Promise((resolve, reject) => {
     https
-      .get(imageUrl, (response) => {
-        response.pipe(file)
+      .get(sourceImageUrl, (response) => {
+        response.pipe(fileLarge)
+        // response.pipe(fileSmall)
 
-        file.on("finish", () => {
-          file.close()
-          console.log(`Image downloaded as ${path}`)
+        fileLarge.on("finish", () => {
+          fileLarge.close()
+          console.log(`Image downloaded as ${largeFilePath}`)
           resolve(true)
         })
       })
@@ -79,11 +102,11 @@ export function generateImagePath(
   productCode: string,
   index: number
 ) {
-  const fileName = replaceSlashesWithAmpersands(productCode)
   const postFix = index ? `_${index}` : ""
-  const path = `${PATH_PREFIX}${folderName}/images/${fileName}${postFix}.jpg`
+  const path = `${PATH_PREFIX}${folderName}/images/`
+  const fileName = `${replaceSlashesWithAmpersands(productCode)}${postFix}`
 
-  return path
+  return { path, fileName }
 }
 
 export function copyFrontendToDistr() {

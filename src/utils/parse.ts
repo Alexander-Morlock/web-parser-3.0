@@ -1,4 +1,3 @@
-import fs from "fs"
 import {
   downloadImage,
   generateImagePath,
@@ -90,26 +89,25 @@ function downloadImages(
     })
     .flat()
     .map((parsedUrl, index) => {
-      const url = parsedUrl.includes(domainName)
+      const sourceImageUrl = parsedUrl.includes(domainName)
         ? parsedUrl
         : `${domainName}/${parsedUrl}`.replace(/\/+/g, "/")
-      const path = generateImagePath(folderName, productCode, index)
+      const { path, fileName } = generateImagePath(
+        folderName,
+        productCode,
+        index
+      )
 
-      return { path, url }
+      return { path, fileName, sourceImageUrl }
     })
 
   return Promise.all(
-    imagesToParse.map(({ path, url }) => {
-      try {
-        if (fs.existsSync(path)) {
-          console.log("Image is already downloaded", path)
-          return Promise.resolve()
-        }
-        return downloadImage(path, url)
-      } catch (error) {
-        console.log(error)
-        return Promise.reject()
-      }
-    })
+    imagesToParse.map(({ path, fileName, sourceImageUrl }) =>
+      downloadImage({
+        path,
+        fileName,
+        sourceImageUrl,
+      })
+    )
   )
 }

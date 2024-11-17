@@ -71,7 +71,6 @@ export async function parseConsoWear({
 
   const dataWithUrls = dataEnhancedWithPossibleUrls.filter(({ URL }) => URL)
 
-  // downloading images
   parse({
     ...consoParserConfig,
     productCodes: dataWithUrls.map((item) => item.ART),
@@ -85,11 +84,14 @@ function generateHtmlImageWithLink(
   imagesFolderUrl: string
 ) {
   const filename = replaceSlashesWithAmpersands(ART)
-  const path = new URL(
-    `${imagesFolderUrl}/${filename}${INDEX ? `_${INDEX}` : ""}.jpg`
-  ).href
+  const getPath = (postfix?: string) =>
+    new URL(
+      `${imagesFolderUrl}/${filename}${INDEX ? `_${INDEX}` : ""}${
+        postfix ?? ""
+      }.jpg`
+    ).href
 
-  return `[url=${path} height=500][img]${path}[/img][/url]`
+  return `[url=${getPath("_enl")} height=500][img]${getPath()}[/img][/url]`
 }
 
 function generateHtml(
