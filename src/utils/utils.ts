@@ -117,7 +117,7 @@ export function replaceSlashesWithAmpersands(str: string) {
 export function generateImagePath(
   folderName: string,
   productCode: string,
-  index: number
+  index = 0
 ) {
   const postFix = index ? `_${index}` : ""
   const path = `${PATH_PREFIX}${folderName}/images/`

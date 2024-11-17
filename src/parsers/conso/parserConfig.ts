@@ -12,4 +12,5 @@ export const consoParserConfig: ParserConfig = {
   requestDelay: 200,
   imageParsers: [consoPreviewImagesParser],
   resizeOptions: { height: 300, fit: "contain" },
+  imagesHostingUrl: "https://imagekeeper.ru/charmante",
 }

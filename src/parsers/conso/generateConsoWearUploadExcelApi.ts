@@ -50,7 +50,7 @@ export function generateConsoWearUploadExcelApi(
 
       parseConsoWear({
         data,
-        imagesHostingUrl: "http://onlinemania.ru/consowear",
+        imagesHostingUrl: consoParserConfig.imagesHostingUrl,
       })
     },
   })

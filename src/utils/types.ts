@@ -10,6 +10,7 @@ export type ParserConfig = {
   imageParsers?: ImageParserConfig<HTMLElement>[]
   textParsers?: TextParserConfig[]
   resizeOptions?: ResizeOptions
+  imagesHostingUrl: string
 }
 
 export type ImageParserConfig<T extends HTMLElement> = {

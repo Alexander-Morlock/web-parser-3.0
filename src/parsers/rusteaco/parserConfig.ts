@@ -26,4 +26,5 @@ export const rusteacoParserConfig: ParserConfig = {
   folderName: "rusteaco",
   imageParsers: [mainImagesParser],
   textParsers: [titleTextParser, descriptionTextParser],
+  imagesHostingUrl: "",
 }

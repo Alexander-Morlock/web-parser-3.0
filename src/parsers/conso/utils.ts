@@ -47,7 +47,10 @@ export async function parseConsoWear({
     const item = data[i]
 
     const backupUrl = backup[item.ART]
-    const URL = backupUrl ?? (await getUrlFromConsowearSearchResult(item.ART))
+    const URL =
+      backupUrl ??
+      (await getUrlFromConsowearSearchResult(item.ART)) ??
+      (await getUrlFromWebfolder(item.ART, imagesHostingUrl))
 
     dataEnhancedWithPossibleUrls.push({ ...item, URL })
     await createBackup(dataEnhancedWithPossibleUrls)
@@ -139,4 +142,23 @@ async function createBackup(
   }
 
   return saveTexts(URLS_BACKUP_FILENAME, "consowear/html", backup, false)
+}
+
+function getUrlFromWebfolder(productCode: string, imagesHostingUrl: string) {
+  return new Promise<string | undefined>(async (resolve, reject) => {
+    const url = new URL(`${imagesHostingUrl}/${productCode}_enl.jpg`).href
+
+    fetch(url)
+      .then((response) => response.status === 200 && resolve(url))
+      .catch(reject)
+
+    const productCodeWithNoColor = productCode.split(" - ")[0]
+    const urlWithNoColor = new URL(
+      `${imagesHostingUrl}/${productCodeWithNoColor}_enl.jpg`
+    ).href
+
+    fetch(urlWithNoColor)
+      .then((response) => response.status === 200 && resolve(urlWithNoColor))
+      .catch(reject)
+  })
 }
