@@ -3,7 +3,7 @@ import { AllHTMLAttributes } from "react"
 export type ParserConfig = {
   domainName: string
   productCodes?: string[]
-  productUrls?: string[]
+  productUrls?: (string | undefined)[]
   requestDelay?: number
   folderName: string
   imageParsers?: ImageParserConfig<HTMLElement>[]

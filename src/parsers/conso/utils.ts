@@ -30,24 +30,24 @@ type Props = {
 }
 
 export async function parseConsoWear({ data, imagesHostingUrl }: Props) {
-  const dataWithUrls: (ConsoWearMultipleSizesExcelRow & { URL?: string })[] = []
+  const dataEnhancedWithPossibleUrls: (ConsoWearMultipleSizesExcelRow & {
+    URL?: string
+  })[] = []
 
   for (let i = 0; i < data.length; i++) {
-    await delay(300 * Math.random())
     const item = data[i]
     const URL = await getUrlFromConsowearSearchResult(item.ART)
-    dataWithUrls.push({ ...item, URL })
+    dataEnhancedWithPossibleUrls.push({ ...item, URL })
     console.log(
-      "Getting URL... ",
+      `Progress: ${Math.round((i / data.length) * 100)}%`,
       item.ART,
       " -> ",
-      URL,
-      `Progress: ${Math.round((i / data.length) * 100)}%`
+      URL ?? "---"
     )
   }
 
-  const html = data
-    .map(({ ART, SIZES, SUBART, DESCRIPTION, PRICE }) =>
+  const html = dataEnhancedWithPossibleUrls
+    .map(({ ART, SIZES, SUBART, DESCRIPTION, PRICE, URL }) =>
       [
         "[color=blue][size=16pt]",
         ART,
@@ -68,22 +68,25 @@ export async function parseConsoWear({ data, imagesHostingUrl }: Props) {
         " руб.[/s]  [glow=red,2,300][color=beige]НАША ЦЕНА[/color][/glow]  ",
         PRICE,
         " руб.+%[/b][br][br]",
+        URL,
       ].join("\t")
     )
     .join("\n")
 
-  saveTexts("excell.txt", "consowear/html", html)
-  saveTexts(
+  await saveTexts("excell.txt", "consowear/html", html)
+  await saveTexts(
     "copy-paste.txt",
     "consowear/html",
     html.replace(/\t/g, "").replace(/\[br\]/g, "\n")
   )
 
+  const dataWithUrls = dataEnhancedWithPossibleUrls.filter(({ URL }) => URL)
+
   // downloading images
   parse({
     ...consoParserConfig,
     productCodes: dataWithUrls.map((item) => item.ART),
-    productUrls: dataWithUrls.map((item) => item.URL ?? ""),
+    productUrls: dataWithUrls.map((item) => item.URL),
   })
 }
 
