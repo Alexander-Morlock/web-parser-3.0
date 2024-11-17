@@ -90,3 +90,7 @@ export function roundNumberBy(number: number, base: number) {
   const safeBase = Math.ceil(Math.abs(base))
   return safeBase * Math.ceil(number / safeBase)
 }
+
+export function getProgress(currentStep: number, steps: number) {
+  return `Progress: [${Math.round((currentStep / steps) * 100)}%]`
+}

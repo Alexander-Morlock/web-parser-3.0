@@ -2,6 +2,7 @@ import { consoParserConfig, consoPreviewImagesParser } from "./parserConfig"
 import { parse } from "../../utils/parse"
 import {
   delay,
+  getProgress,
   replaceSlashesWithAmpersands,
   saveTexts,
 } from "../../utils/utils"
@@ -38,12 +39,7 @@ export async function parseConsoWear({ data, imagesHostingUrl }: Props) {
     const item = data[i]
     const URL = await getUrlFromConsowearSearchResult(item.ART)
     dataEnhancedWithPossibleUrls.push({ ...item, URL })
-    console.log(
-      `Progress: ${Math.round((i / data.length) * 100)}%`,
-      item.ART,
-      " -> ",
-      URL ?? "---"
-    )
+    console.log(getProgress(i, data.length), item.ART, " -> ", URL ?? "---")
   }
 
   const html = dataEnhancedWithPossibleUrls

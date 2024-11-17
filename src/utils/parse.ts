@@ -1,4 +1,10 @@
-import { delay, downloadImage, generateImagePath, saveTexts } from "./utils"
+import {
+  delay,
+  downloadImage,
+  generateImagePath,
+  getProgress,
+  saveTexts,
+} from "./utils"
 import { JSDOM } from "jsdom"
 import { ImageParserConfig, ParserConfig } from "./types"
 
@@ -29,7 +35,11 @@ export async function parse({
       const html = new JSDOM(text).window.document
 
       if (imageParsers) {
-        console.log("PARSING...", productCode)
+        console.log(
+          getProgress(i, productCodes.length),
+          "PARSING...",
+          productCode
+        )
 
         await downloadImages(
           imageParsers,
