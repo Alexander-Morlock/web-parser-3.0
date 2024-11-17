@@ -50,7 +50,13 @@ export async function parseConsoWear({
     const URL =
       backupUrl ??
       (await getUrlFromConsowearSearchResult(item.ART)) ??
-      (await getUrlFromWebfolder(item.ART, imagesHostingUrl))
+      (await getUrlFromWebfolder(item.ART, imagesHostingUrl, () =>
+        console.log(
+          getProgress(i, data.length),
+          "Parsed from WebFolder ->",
+          item.ART
+        )
+      ))
 
     dataEnhancedWithPossibleUrls.push({ ...item, URL })
     await createBackup(dataEnhancedWithPossibleUrls)
@@ -144,21 +150,35 @@ async function createBackup(
   return saveTexts(URLS_BACKUP_FILENAME, "consowear/html", backup, false)
 }
 
-function getUrlFromWebfolder(productCode: string, imagesHostingUrl: string) {
+function getUrlFromWebfolder(
+  productCode: string,
+  imagesHostingUrl: string,
+  onSuccess: () => void
+) {
   return new Promise<string | undefined>(async (resolve, reject) => {
     const url = new URL(`${imagesHostingUrl}/${productCode}_enl.jpg`).href
 
-    fetch(url)
-      .then((response) => response.status === 200 && resolve(url))
-      .catch(reject)
+    try {
+      const response = await fetch(url)
+      if (response.status === 200) {
+        onSuccess()
+        return resolve(url)
+      }
 
-    const productCodeWithNoColor = productCode.split(" - ")[0]
-    const urlWithNoColor = new URL(
-      `${imagesHostingUrl}/${productCodeWithNoColor}_enl.jpg`
-    ).href
+      const productCodeWithNoColor = productCode.split(" - ")[0]
+      const urlWithNoColor = new URL(
+        `${imagesHostingUrl}/${productCodeWithNoColor}_enl.jpg`
+      ).href
 
-    fetch(urlWithNoColor)
-      .then((response) => response.status === 200 && resolve(urlWithNoColor))
-      .catch(reject)
+      const responseNoColor = await fetch(urlWithNoColor)
+      if (responseNoColor.status === 200) {
+        onSuccess()
+        resolve(urlWithNoColor)
+      }
+
+      resolve(undefined)
+    } catch (error) {
+      reject(error)
+    }
   })
 }
