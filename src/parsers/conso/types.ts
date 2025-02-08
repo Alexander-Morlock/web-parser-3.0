@@ -8,6 +8,12 @@ export type ConsoWearSingleSizeExcelRow = {
   DESCRIPTION: string
 }
 
+export type ConsoWearArchivePricesExcelRow = {
+  ART: string
+  BEFORE: string
+  AFTER: string
+}
+
 export type ConsoWearMultipleSizesExcelRow = Omit<
   ConsoWearSingleSizeExcelRow,
   "SIZE"

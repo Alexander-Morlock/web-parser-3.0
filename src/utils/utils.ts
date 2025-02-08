@@ -174,3 +174,27 @@ export function exctractUrlsFromBackup(folderName: string) {
     }
   })
 }
+
+export function getUrlFromWebfolder(
+  filenames: string[],
+  imagesHostingUrl: string,
+  onSuccess: () => void
+) {
+  return new Promise<string | undefined>(async (resolve, reject) => {
+    for (const filename of filenames) {
+      const url = new URL(`${imagesHostingUrl}/${filename}`).href
+
+      try {
+        const response = await fetch(url)
+        if (response.status === 200) {
+          onSuccess()
+          return resolve(url)
+        }
+
+        resolve(undefined)
+      } catch (error) {
+        reject(error)
+      }
+    }
+  })
+}

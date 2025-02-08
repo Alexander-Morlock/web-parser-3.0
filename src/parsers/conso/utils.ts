@@ -3,12 +3,18 @@ import { parse } from "../../utils/parse"
 import {
   exctractUrlsFromBackup,
   getProgress,
+  getUrlFromWebfolder,
   replaceSlashesWithAmpersands,
+  roundNumberBy,
   saveTexts,
   URLS_BACKUP_FILENAME,
 } from "../../utils/utils"
 import { JSDOM } from "jsdom"
-import { ConsoWearMultipleSizesExcelRow } from "./types"
+import {
+  ConsoWearArchivePricesExcelRow,
+  ConsoWearMultipleSizesExcelRow,
+  ConsoWearSingleSizeExcelRow,
+} from "./types"
 
 export function generateConsoSearchUrl(ART: string) {
   const prefix = "https://opt.consowear.ru/poisk?search="
@@ -28,6 +34,7 @@ export function getUrlFromConsowearSearchResult(ART: string) {
 
 type ParseConsoWearProps = {
   data: ConsoWearMultipleSizesExcelRow[]
+  archivePrices?: ConsoWearArchivePricesExcelRow[]
   imagesHostingUrl: string
 }
 
@@ -38,6 +45,7 @@ type DataEnhancedWithPossibleUrls = (ConsoWearMultipleSizesExcelRow & {
 export async function parseConsoWear({
   data,
   imagesHostingUrl,
+  archivePrices,
 }: ParseConsoWearProps) {
   const dataEnhancedWithPossibleUrls: DataEnhancedWithPossibleUrls = []
 
@@ -50,12 +58,15 @@ export async function parseConsoWear({
     const URL =
       backupUrl ??
       (await getUrlFromConsowearSearchResult(item.ART)) ??
-      (await getUrlFromWebfolder(item.ART, imagesHostingUrl, () =>
-        console.log(
-          getProgress(i, data.length),
-          "Parsed from WebFolder ->",
-          item.ART
-        )
+      (await getUrlFromWebfolder(
+        [`${item.ART}_enl.jpg`, `${item.ART.split(" - ")[0]}_enl.jpg`],
+        imagesHostingUrl,
+        () =>
+          console.log(
+            getProgress(i, data.length),
+            "Parsed from WebFolder ->",
+            item.ART
+          )
       ))
 
     dataEnhancedWithPossibleUrls.push({ ...item, URL })
@@ -69,14 +80,13 @@ export async function parseConsoWear({
     )
   }
 
-  const html = generateHtml(dataEnhancedWithPossibleUrls, imagesHostingUrl)
+  const html = generateHtml(
+    dataEnhancedWithPossibleUrls,
+    imagesHostingUrl,
+    archivePrices
+  )
 
   await saveTexts("excell.txt", "consowear/html", html)
-  await saveTexts(
-    "copy-paste.txt",
-    "consowear/html",
-    html.replace(/\t/g, "").replace(/\[br\]/g, "\n")
-  )
 
   const dataWithUrls = dataEnhancedWithPossibleUrls.filter(({ URL }) => URL)
 
@@ -100,12 +110,13 @@ function generateHtmlImageWithLink(
       }.jpg`
     ).href
 
-  return `[url=${getPath("_enl")} height=500][img]${getPath()}[/img][/url]`
+  return `[url=${getPath("_enl")}][img]${getPath()}[/img][/url]`
 }
 
 function generateHtml(
   dataEnhancedWithPossibleUrls: DataEnhancedWithPossibleUrls,
-  imagesHostingUrl: string
+  imagesHostingUrl: string,
+  archivePrices?: ConsoWearArchivePricesExcelRow[]
 ) {
   return dataEnhancedWithPossibleUrls
     .map(({ ART, SIZES, SUBART, DESCRIPTION, PRICE, URL }) =>
@@ -130,9 +141,19 @@ function generateHtml(
         PRICE,
         " руб.+%[/b][br][br]",
         URL,
+        getArchivePrice(ART, "BEFORE", archivePrices),
+        getArchivePrice(ART, "AFTER", archivePrices),
       ].join("\t")
     )
     .join("\n")
+}
+
+function getArchivePrice(
+  ART: string,
+  type: "BEFORE" | "AFTER",
+  archivePrices?: ConsoWearArchivePricesExcelRow[]
+) {
+  return archivePrices?.find((price) => price.ART === ART)?.[type]
 }
 
 async function createBackup(
@@ -150,35 +171,35 @@ async function createBackup(
   return saveTexts(URLS_BACKUP_FILENAME, "consowear/html", backup, false)
 }
 
-function getUrlFromWebfolder(
-  productCode: string,
-  imagesHostingUrl: string,
-  onSuccess: () => void
+export function getConsoWearMultipleSizesExcelRowData(
+  jsonData: ConsoWearSingleSizeExcelRow[]
 ) {
-  return new Promise<string | undefined>(async (resolve, reject) => {
-    const url = new URL(`${imagesHostingUrl}/${productCode}_enl.jpg`).href
+  const products: {
+    [key: string]: ConsoWearMultipleSizesExcelRow
+  } = {}
 
-    try {
-      const response = await fetch(url)
-      if (response.status === 200) {
-        onSuccess()
-        return resolve(url)
+  jsonData.forEach(
+    ({ ART, SUBART, SIZE, PRICE, MATERIALS, COLOR, DESCRIPTION }, INDEX) => {
+      if (ART in products) {
+        products[ART].SIZES = [...products[ART].SIZES, SIZE].sort()
+      } else {
+        products[ART] = {
+          ART,
+          SUBART,
+          SIZES: [SIZE],
+          PRICE: String(roundNumberBy(Number(PRICE), 10)),
+          MATERIALS,
+          COLOR,
+          DESCRIPTION,
+          INDEX,
+        }
       }
-
-      const productCodeWithNoColor = productCode.split(" - ")[0]
-      const urlWithNoColor = new URL(
-        `${imagesHostingUrl}/${productCodeWithNoColor}_enl.jpg`
-      ).href
-
-      const responseNoColor = await fetch(urlWithNoColor)
-      if (responseNoColor.status === 200) {
-        onSuccess()
-        resolve(urlWithNoColor)
-      }
-
-      resolve(undefined)
-    } catch (error) {
-      reject(error)
     }
-  })
+  )
+
+  const data: ConsoWearMultipleSizesExcelRow[] = Object.entries(products)
+    .map(([ART, product]) => ({ ...product, ART }))
+    .sort((a, b) => a.INDEX - b.INDEX)
+
+  return data
 }
