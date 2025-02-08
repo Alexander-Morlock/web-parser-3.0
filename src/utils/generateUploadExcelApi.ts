@@ -1,23 +1,23 @@
-import xlsx from "xlsx"
 import multer from "multer"
 import { Express, Response, Request } from "express"
-import { createFolder } from "./utils"
+import { createFolder, getIsNotNullableTypeGuard } from "./utils"
 import path from "path"
 
 type ParsedQs = {
   [key: string]: undefined | string | string[] | ParsedQs | ParsedQs[]
 }
 
-type GenerateUploadExcelApiProps<TForm, TArchivePrices> = {
+type GenerateUploadExcelApiProps = {
   app: Express
   endPoint: string
   folderName: string
   rootDirName: string
+  fieldnames: string[]
   callback: (
-    jsonData: {
-      form: TForm[]
-      prices?: TArchivePrices[]
-    },
+    files: {
+      fieldname: string
+      file?: Express.Multer.File
+    }[],
     req: Request<
       { [key: string]: string },
       any,
@@ -35,38 +35,34 @@ type ReqFiles =
     }
   | Express.Multer.File[]
 
-export function generateUploadExcelApi<TForm, TArchivePrices>({
+export function generateUploadExcelApi({
   app,
   endPoint,
   folderName,
   rootDirName,
+  fieldnames,
   callback,
-}: GenerateUploadExcelApiProps<TForm, TArchivePrices>) {
+}: GenerateUploadExcelApiProps) {
   const storage = multer.memoryStorage()
   const upload = multer({ storage: storage })
   app.post(
     endPoint,
-    upload.fields([{ name: "form" }, { name: "archivePrices" }]),
+    upload.fields(fieldnames.map((fieldname) => ({ name: fieldname }))),
     (req, res) => {
       try {
-        const formFile = getFile(req.files, "form")
-        const archivePricesFile = getFile(req.files, "archivePrices")
-
-        const formJsonData = getJsonDataFromExcelFile<TForm>(formFile)
-        const archivePricesJsonData =
-          getJsonDataFromExcelFile<TArchivePrices>(archivePricesFile)
+        const files = fieldnames
+          .map((fieldname) => ({
+            fieldname,
+            file: getFile(req.files, fieldname),
+          }))
+          .filter(getIsNotNullableTypeGuard)
 
         createFolder(folderName, "html")
         createFolder(folderName, "images")
 
         res.sendFile(path.join(rootDirName, "upload-succesfull.html"))
 
-        formJsonData &&
-          callback(
-            { form: formJsonData, prices: archivePricesJsonData },
-            req,
-            res
-          )
+        callback(files, req, res)
       } catch (error) {
         console.error(error)
         res.status(500).json({ error: "Failed to process the uploaded file" })
@@ -81,17 +77,4 @@ function getFile(files?: ReqFiles, fieldname?: string) {
   }
 
   return Array.isArray(files) ? undefined : files[`${fieldname}`]?.[0]
-}
-
-function getJsonDataFromExcelFile<T>(file?: Express.Multer.File) {
-  if (!file) {
-    return undefined
-  }
-
-  const workbook = xlsx.read(file.buffer, { type: "buffer" })
-  const sheetName = workbook.SheetNames[0]
-  const sheet = workbook.Sheets[sheetName]
-  const jsonData: T[] = xlsx.utils.sheet_to_json(sheet)
-
-  return jsonData
 }

@@ -1,4 +1,5 @@
 import fs from "fs"
+import xlsx from "xlsx"
 import https from "https"
 import { ExctractUrlsFromBackup } from "./types"
 import sharp, { ResizeOptions } from "sharp"
@@ -197,4 +198,21 @@ export function getUrlFromWebfolder(
       }
     }
   })
+}
+
+export function getJsonDataFromExcelFile<T>(file?: Express.Multer.File) {
+  if (!file) {
+    return undefined
+  }
+
+  const workbook = xlsx.read(file.buffer, { type: "buffer" })
+  const sheetName = workbook.SheetNames[0]
+  const sheet = workbook.Sheets[sheetName]
+  const jsonData: T[] = xlsx.utils.sheet_to_json(sheet)
+
+  return jsonData
+}
+
+export function getIsNotNullableTypeGuard<T>(value?: T | null): value is T {
+  return value !== null && value !== undefined
 }
